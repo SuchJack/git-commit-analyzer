@@ -49,15 +49,15 @@ class AnalyzeCommitAction : AnAction() {
             return
         }
 
-        val repoManager = GitRepositoryManager.getInstance(project)
-        val repo = repoManager.getRepositoryForRoot(root)
-        if (repo == null) {
-            Messages.showErrorDialog(project, "未找到 Git 仓库", "错误")
-            return
-        }
-
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "AI 分析提交中...", true) {
             override fun run(indicator: ProgressIndicator) {
+                val repoManager = GitRepositoryManager.getInstance(project)
+                val repo = repoManager.getRepositoryForRoot(root)
+                if (repo == null) {
+                    showError(project, "未找到 Git 仓库")
+                    return
+                }
+
                 indicator.isIndeterminate = false
                 indicator.fraction = 0.1
                 indicator.text = "获取提交变更..."
