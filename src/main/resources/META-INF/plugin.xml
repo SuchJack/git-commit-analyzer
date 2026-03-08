@@ -2,11 +2,13 @@
     <id>com.github.commitanalyzer</id>
     <name>Git Commit Analyzer</name>
     <version>1.0.0</version>
-    <vendor email="you@example.com" url="https://github.com/you">Your Name</vendor>
+    <vendor email="2640808535@qq.com" url="https://github.com/SuchJack">SuchJack</vendor>
 
     <description><![CDATA[
-    通过大模型分析 Git 提交的变更内容，给出摘要、风险评估和合并建议。<br/>
-    在 Git Log 中右键选中一条 commit，即可触发 AI 分析。
+    <h3>English</h3>
+    <p>Analyze Git commits with AI: get change summaries, risk assessment, and merge suggestions directly in IntelliJ. Right‑click a commit in the Git Log and choose "AI 分析该提交" to run the analysis. Supports any OpenAI‑compatible API (OpenAI, DeepSeek, local models, etc.). Configure API URL, key, and model under <b>Settings → Tools → Git Commit Analyzer</b>; optional cherry‑pick from the result dialog.</p>
+    <h3>中文</h3>
+    <p>使用大模型分析 Git 提交：在 IDE 内即可获得变更摘要、风险评估与合并建议。在 Git Log 中右键选中一条 commit，选择「AI 分析该提交」即可触发分析。支持任意 OpenAI 兼容接口（OpenAI、DeepSeek、本地模型等）。在 <b>设置 → Tools → Git Commit Analyzer</b> 中配置 API 地址、Key 与模型；分析结果弹窗中可选择性 Cherry-Pick 该提交。</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
