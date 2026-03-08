@@ -108,7 +108,7 @@ class AnalyzeResultDialog(
         val codeBgHex = colorToHex(codeBg)
 
         val styleSheet = StyleSheet()
-        styleSheet.addRule("body { font-family: 'Microsoft YaHei', sans-serif; font-size: 14px; padding: 8px; color: $fgHex; background-color: $bgHex; }")
+        styleSheet.addRule("body { font-family: 'Microsoft YaHei', sans-serif; font-size: 12px; padding: 8px; color: $fgHex; background-color: $bgHex; }")
         styleSheet.addRule("h1 { font-size: 1.6em; margin-top: 16px; margin-bottom: 8px; }")
         styleSheet.addRule("h2 { font-size: 1.4em; margin-top: 14px; margin-bottom: 6px; }")
         styleSheet.addRule("h3 { font-size: 1.2em; margin-top: 12px; margin-bottom: 4px; }")
