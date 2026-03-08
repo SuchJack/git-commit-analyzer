@@ -1,7 +1,11 @@
 package com.github.commitanalyzer.config
 
+import com.github.commitanalyzer.service.LlmService
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridBagConstraints
@@ -54,6 +58,51 @@ class CommitAnalyzerConfigurable(private val project: Project) : Configurable {
         gbc.gridx = 1; gbc.weightx = 1.0
         panel.add(modelField, gbc)
 
+        // --- 检测连接 ---
+        row++
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.0
+        panel.add(JLabel(""), gbc)
+        val testConnBtn = JButton("检测连接").apply {
+            preferredSize = Dimension(140, 28)
+            minimumSize = Dimension(140, 28)
+        }
+        testConnBtn.addActionListener {
+            val baseUrl = apiBaseUrlField?.text?.trim() ?: ""
+            val key = String(apiKeyField?.password ?: charArrayOf())
+            val model = modelField?.text?.trim() ?: "gpt-4"
+            val timeout = (timeoutField?.value as? Int) ?: 120
+            if (baseUrl.isBlank() || key.isBlank()) {
+                Messages.showWarningDialog(project, "请先填写 API Base URL 和 API Key。", "无法检测")
+                return@addActionListener
+            }
+            testConnBtn.isEnabled = false
+            testConnBtn.text = "检测中..."
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "检测 API 连接...", false) {
+                override fun run(indicator: com.intellij.openapi.progress.ProgressIndicator) {
+                    val result = LlmService.testConnection(baseUrl, key, model, timeout)
+                    com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                        testConnBtn.isEnabled = true
+                        testConnBtn.text = "检测连接"
+                        if (result.isSuccess) {
+                            Messages.showInfoMessage(project, "API 连接正常，配置可用。", "检测通过")
+                        } else {
+                            Messages.showErrorDialog(
+                                project,
+                                result.exceptionOrNull()?.message ?: "未知错误",
+                                "检测失败"
+                            )
+                        }
+                    }
+                }
+            })
+        }
+        gbc.gridx = 1; gbc.weightx = 1.0
+        gbc.anchor = GridBagConstraints.EAST
+        gbc.fill = GridBagConstraints.NONE
+        panel.add(testConnBtn, gbc)
+        gbc.anchor = GridBagConstraints.WEST
+        gbc.fill = GridBagConstraints.HORIZONTAL
+
         // --- Timeout ---
         row++
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.0
@@ -88,7 +137,10 @@ class CommitAnalyzerConfigurable(private val project: Project) : Configurable {
         row++
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 0.0; gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.NONE; gbc.anchor = GridBagConstraints.EAST
-        val resetBtn = JButton("恢复默认 Prompt")
+        val resetBtn = JButton("恢复默认 Prompt").apply {
+            preferredSize = Dimension(140, 28)
+            minimumSize = Dimension(140, 28)
+        }
         resetBtn.addActionListener {
             systemPromptArea?.text = CommitAnalyzerSettings.DEFAULT_SYSTEM_PROMPT
         }

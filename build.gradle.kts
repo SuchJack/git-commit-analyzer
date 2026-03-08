@@ -40,4 +40,5 @@ tasks {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("org.commonmark:commonmark:0.21.0")
 }

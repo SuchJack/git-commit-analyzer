@@ -10,10 +10,12 @@ import git4idea.commands.Git
 import git4idea.commands.GitCommand
 import git4idea.commands.GitLineHandler
 import git4idea.repo.GitRepository
+import org.commonmark.parser.Parser
+import org.commonmark.renderer.html.HtmlRenderer
 import java.awt.*
 import javax.swing.*
-import javax.swing.text.SimpleAttributeSet
-import javax.swing.text.StyleConstants
+import javax.swing.text.html.HTMLEditorKit
+import javax.swing.text.html.StyleSheet
 
 class AnalyzeResultDialog(
     private val project: Project,
@@ -67,15 +69,46 @@ class AnalyzeResultDialog(
     }
 
     private fun createAnalysisPanel(): JComponent {
-        val textPane = JTextPane()
-        textPane.isEditable = false
-        textPane.contentType = "text/plain"
-        textPane.text = analysisText
-        textPane.caretPosition = 0
-        textPane.font = Font("Microsoft YaHei", Font.PLAIN, 14)
-        textPane.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-
+        val html = markdownToHtml(analysisText)
+        val textPane = JEditorPane().apply {
+            contentType = "text/html"
+            isEditable = false
+            editorKit = HTMLEditorKit().apply {
+                styleSheet = createMarkdownStyleSheet()
+            }
+            text = html
+            caretPosition = 0
+            border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        }
         return JBScrollPane(textPane)
+    }
+
+    private fun markdownToHtml(markdown: String): String {
+        val parser = Parser.builder().build()
+        val document = parser.parse(markdown)
+        val renderer = HtmlRenderer.builder().build()
+        val body = renderer.render(document)
+        return """
+            <html>
+            <head><meta charset="UTF-8"></head>
+            <body class="markdown-body">$body</body>
+            </html>
+        """.trimIndent()
+    }
+
+    private fun createMarkdownStyleSheet(): StyleSheet {
+        val styleSheet = StyleSheet()
+        styleSheet.addRule("body { font-family: 'Microsoft YaHei', sans-serif; font-size: 14px; padding: 8px; }")
+        styleSheet.addRule("h1 { font-size: 1.6em; margin-top: 16px; margin-bottom: 8px; }")
+        styleSheet.addRule("h2 { font-size: 1.4em; margin-top: 14px; margin-bottom: 6px; }")
+        styleSheet.addRule("h3 { font-size: 1.2em; margin-top: 12px; margin-bottom: 4px; }")
+        styleSheet.addRule("ul, ol { margin: 8px 0; padding-left: 24px; }")
+        styleSheet.addRule("li { margin: 4px 0; }")
+        styleSheet.addRule("code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; }")
+        styleSheet.addRule("pre { background: #f5f5f5; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }")
+        styleSheet.addRule("pre code { background: none; padding: 0; }")
+        styleSheet.addRule("p { margin: 8px 0; }")
+        return styleSheet
     }
 
     private fun createDiffPanel(): JComponent {
