@@ -1,0 +1,36 @@
+<idea-plugin>
+    <id>com.github.commitanalyzer</id>
+    <name>Git Commit Analyzer</name>
+    <version>1.0.0</version>
+    <vendor email="you@example.com" url="https://github.com/you">Your Name</vendor>
+
+    <description><![CDATA[
+    通过大模型分析 Git 提交的变更内容，给出摘要、风险评估和合并建议。<br/>
+    在 Git Log 中右键选中一条 commit，即可触发 AI 分析。
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable
+                parentId="tools"
+                instance="com.github.commitanalyzer.config.CommitAnalyzerConfigurable"
+                id="com.github.commitanalyzer.config.CommitAnalyzerConfigurable"
+                displayName="Git Commit Analyzer"/>
+
+        <projectService
+                serviceImplementation="com.github.commitanalyzer.config.CommitAnalyzerSettings"/>
+    </extensions>
+
+    <actions>
+        <action
+                id="GitCommitAnalyzer.AnalyzeCommit"
+                class="com.github.commitanalyzer.action.AnalyzeCommitAction"
+                text="AI 分析该提交"
+                description="使用大模型分析当前选中的 Git 提交变更"
+                icon="AllIcons.Actions.Preview">
+            <add-to-group group-id="Vcs.Log.ContextMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

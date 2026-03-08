@@ -1,0 +1,123 @@
+package com.github.commitanalyzer.ui
+
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
+import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTabbedPane
+import git4idea.commands.Git
+import git4idea.commands.GitCommand
+import git4idea.commands.GitLineHandler
+import git4idea.repo.GitRepository
+import java.awt.*
+import javax.swing.*
+import javax.swing.text.SimpleAttributeSet
+import javax.swing.text.StyleConstants
+
+class AnalyzeResultDialog(
+    private val project: Project,
+    private val commitHash: String,
+    private val diffText: String,
+    private val analysisText: String,
+    private val repository: GitRepository
+) : DialogWrapper(project, true) {
+
+    init {
+        title = "AI 提交分析 — $commitHash"
+        setOKButtonText("关闭")
+        setCancelButtonText("Cherry-Pick")
+        init()
+    }
+
+    override fun createCenterPanel(): JComponent {
+        val tabbedPane = JBTabbedPane()
+
+        // --- Tab 1: AI 分析结果 ---
+        val analysisPanel = createAnalysisPanel()
+        tabbedPane.addTab("AI 分析结果", analysisPanel)
+
+        // --- Tab 2: 原始 Diff ---
+        val diffPanel = createDiffPanel()
+        tabbedPane.addTab("原始 Diff", diffPanel)
+
+        val root = JPanel(BorderLayout())
+        root.preferredSize = Dimension(800, 600)
+
+        val header = createHeaderPanel()
+        root.add(header, BorderLayout.NORTH)
+        root.add(tabbedPane, BorderLayout.CENTER)
+
+        return root
+    }
+
+    private fun createHeaderPanel(): JPanel {
+        val panel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 5))
+        panel.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+
+        val hashLabel = JLabel("Commit: ")
+        hashLabel.font = hashLabel.font.deriveFont(Font.BOLD)
+        panel.add(hashLabel)
+
+        val hashValue = JLabel(commitHash)
+        hashValue.foreground = JBColor(Color(0, 102, 204), Color(88, 166, 255))
+        panel.add(hashValue)
+
+        return panel
+    }
+
+    private fun createAnalysisPanel(): JComponent {
+        val textPane = JTextPane()
+        textPane.isEditable = false
+        textPane.contentType = "text/plain"
+        textPane.text = analysisText
+        textPane.caretPosition = 0
+        textPane.font = Font("Microsoft YaHei", Font.PLAIN, 14)
+        textPane.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+
+        return JBScrollPane(textPane)
+    }
+
+    private fun createDiffPanel(): JComponent {
+        val textArea = JTextArea(diffText)
+        textArea.isEditable = false
+        textArea.font = Font("Consolas", Font.PLAIN, 12)
+        textArea.tabSize = 4
+        textArea.caretPosition = 0
+        textArea.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+
+        return JBScrollPane(textArea)
+    }
+
+    override fun createActions(): Array<Action> {
+        val closeAction = okAction
+        val cherryPickAction = cancelAction
+        cherryPickAction.putValue(Action.NAME, "Cherry-Pick 该提交")
+        return arrayOf(cherryPickAction, closeAction)
+    }
+
+    override fun doCancelAction() {
+        val confirmed = Messages.showYesNoDialog(
+            project,
+            "确定要 Cherry-Pick 提交 $commitHash 到当前分支吗？",
+            "确认 Cherry-Pick",
+            Messages.getQuestionIcon()
+        )
+        if (confirmed != Messages.YES) return
+
+        val handler = GitLineHandler(project, repository.root, GitCommand.CHERRY_PICK)
+        handler.addParameters(commitHash)
+        val result = Git.getInstance().runCommand(handler)
+
+        if (result.success()) {
+            Messages.showInfoMessage(project, "Cherry-Pick 成功！", "成功")
+            super.doCancelAction()
+        } else {
+            Messages.showErrorDialog(
+                project,
+                "Cherry-Pick 失败：\n${result.errorOutputAsJoinedString}",
+                "Cherry-Pick 失败"
+            )
+        }
+    }
+}
