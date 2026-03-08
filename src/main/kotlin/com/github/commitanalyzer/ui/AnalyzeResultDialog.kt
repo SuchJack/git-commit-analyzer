@@ -138,12 +138,19 @@ class AnalyzeResultDialog(
 
     override fun createActions(): Array<Action> {
         val closeAction = okAction
-        val cherryPickAction = cancelAction
-        cherryPickAction.putValue(Action.NAME, "Cherry-Pick 该提交")
-        return arrayOf(cherryPickAction, closeAction)
+        val cherryPickAction = object : AbstractAction("Cherry-Pick 该提交") {
+            override fun actionPerformed(e: java.awt.event.ActionEvent?) {
+                performCherryPick()
+            }
+        }
+        return arrayOf(closeAction, cherryPickAction)
     }
 
     override fun doCancelAction() {
+        super.doCancelAction()
+    }
+
+    private fun performCherryPick() {
         val confirmed = Messages.showYesNoDialog(
             project,
             "确定要 Cherry-Pick 提交 $commitHash 到当前分支吗？",
@@ -158,7 +165,7 @@ class AnalyzeResultDialog(
 
         if (result.success()) {
             Messages.showInfoMessage(project, "Cherry-Pick 成功！", "成功")
-            super.doCancelAction()
+            close(OK_EXIT_CODE)
         } else {
             Messages.showErrorDialog(
                 project,
