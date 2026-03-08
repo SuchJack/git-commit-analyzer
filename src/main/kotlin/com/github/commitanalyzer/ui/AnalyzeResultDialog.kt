@@ -114,8 +114,8 @@ class AnalyzeResultDialog(
         styleSheet.addRule("h3 { font-size: 1.2em; margin-top: 12px; margin-bottom: 4px; }")
         styleSheet.addRule("ul, ol { margin: 8px 0; padding-left: 24px; }")
         styleSheet.addRule("li { margin: 4px 0; }")
-        styleSheet.addRule("code { background-color: $codeBgHex; color: $fgHex; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; }")
-        styleSheet.addRule("pre { background-color: $codeBgHex; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }")
+        styleSheet.addRule("code { background-color: $codeBgHex; color: $fgHex; padding: 2px 6px; font-family: Consolas, monospace; }")
+        styleSheet.addRule("pre { background-color: $codeBgHex; padding: 12px; margin-top: 12px; margin-bottom: 12px; }")
         styleSheet.addRule("pre code { background: none; padding: 0; }")
         styleSheet.addRule("p { margin: 8px 0; }")
         return styleSheet
