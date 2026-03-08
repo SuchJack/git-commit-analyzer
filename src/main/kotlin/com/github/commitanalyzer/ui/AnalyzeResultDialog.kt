@@ -6,6 +6,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTabbedPane
+import com.intellij.util.ui.UIUtil
 import git4idea.commands.Git
 import git4idea.commands.GitCommand
 import git4idea.commands.GitLineHandler
@@ -76,6 +77,8 @@ class AnalyzeResultDialog(
             editorKit = HTMLEditorKit().apply {
                 styleSheet = createMarkdownStyleSheet()
             }
+            background = UIUtil.getPanelBackground()
+            foreground = UIUtil.getLabelForeground()
             text = html
             caretPosition = 0
             border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
@@ -97,18 +100,29 @@ class AnalyzeResultDialog(
     }
 
     private fun createMarkdownStyleSheet(): StyleSheet {
+        val fg = UIUtil.getLabelForeground()
+        val bg = UIUtil.getPanelBackground()
+        val codeBg = JBColor(Color(0xE8, 0xE8, 0xE8), Color(0x3C, 0x3F, 0x41))
+        val fgHex = colorToHex(fg)
+        val bgHex = colorToHex(bg)
+        val codeBgHex = colorToHex(codeBg)
+
         val styleSheet = StyleSheet()
-        styleSheet.addRule("body { font-family: 'Microsoft YaHei', sans-serif; font-size: 14px; padding: 8px; }")
+        styleSheet.addRule("body { font-family: 'Microsoft YaHei', sans-serif; font-size: 14px; padding: 8px; color: $fgHex; background-color: $bgHex; }")
         styleSheet.addRule("h1 { font-size: 1.6em; margin-top: 16px; margin-bottom: 8px; }")
         styleSheet.addRule("h2 { font-size: 1.4em; margin-top: 14px; margin-bottom: 6px; }")
         styleSheet.addRule("h3 { font-size: 1.2em; margin-top: 12px; margin-bottom: 4px; }")
         styleSheet.addRule("ul, ol { margin: 8px 0; padding-left: 24px; }")
         styleSheet.addRule("li { margin: 4px 0; }")
-        styleSheet.addRule("code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; }")
-        styleSheet.addRule("pre { background: #f5f5f5; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }")
+        styleSheet.addRule("code { background-color: $codeBgHex; color: $fgHex; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; }")
+        styleSheet.addRule("pre { background-color: $codeBgHex; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }")
         styleSheet.addRule("pre code { background: none; padding: 0; }")
         styleSheet.addRule("p { margin: 8px 0; }")
         return styleSheet
+    }
+
+    private fun colorToHex(c: Color): String {
+        return String.format("#%02x%02x%02x", c.red, c.green, c.blue)
     }
 
     private fun createDiffPanel(): JComponent {
